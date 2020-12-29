@@ -45,9 +45,8 @@ class ErrorLogs extends Audit {
 
   /** @return {AuditOptions} */
   static defaultOptions() {
-    return {};
+    return {ignoredPatterns: ['ERR_BLOCKED_BY_CLIENT.Inspector']};
   }
-
 
   /**
    * @template {{description: string | undefined}} T

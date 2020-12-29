@@ -124,6 +124,22 @@ describe('ConsoleMessages error logs audit', () => {
       'TypeError: Cannot read property \'msie\' of undefined');
   });
 
+  // Checks bug #10198
+  it('filters out blocked_by_client.inspector messages', () => {
+    const auditResult = ErrorLogsAudit.audit({
+      ConsoleMessages: [{
+        'source': 'exception',
+        'level': 'error',
+        'timestamp': 1506535813608.003,
+        'url': 'https://www.facebook.com/tr/',
+        'text': 'Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector',
+      }],
+    }, {options: ErrorLogsAudit.defaultOptions()});
+    assert.equal(auditResult.score, 1);
+    assert.equal(auditResult.details.items.length, 0);
+  });
+
+
   describe('options', () => {
     it('does nothing with an empty pattern', () => {
       const options = {ignoredPatterns: ''};

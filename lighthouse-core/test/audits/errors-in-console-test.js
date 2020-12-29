@@ -124,7 +124,7 @@ describe('ConsoleMessages error logs audit', () => {
       'TypeError: Cannot read property \'msie\' of undefined');
   });
 
-  // Checks bug #10198
+  // https://github.com/GoogleChrome/lighthouse/issues/10198
   it('filters out blocked_by_client.inspector messages', () => {
     const auditResult = ErrorLogsAudit.audit({
       ConsoleMessages: [{

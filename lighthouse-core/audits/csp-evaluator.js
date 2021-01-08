@@ -8,7 +8,7 @@
 const Audit = require('./audit.js');
 const MainResource = require('../computed/main-resource.js');
 const i18n = require('../lib/i18n/i18n.js');
-const {evaluateRawCsp} = require('../lib/csp-evaluator.js');
+const {evaluateRawCspForFailures, evaluateRawCspForWarnings} = require('../lib/csp-evaluator.js');
 
 /** @typedef {import('../lib/csp-evaluator.js').Finding} Finding */
 
@@ -112,10 +112,10 @@ class CSPEvaluator extends Audit {
     }));
     const warnings = hasCspMetaTags ? [UIStrings.metaTagWarning] : [];
 
-    const cspHeader = mainResource.responseHeaders.find(h => {
+    const cspHeaders = mainResource.responseHeaders.filter(h => {
       return h.name.toLowerCase() === 'content-security-policy';
-    });
-    if (!cspHeader) {
+    }).map(h => h.value);
+    if (cspHeaders.length == 0) {
       return {
         warnings,
         score: 0,
@@ -123,7 +123,8 @@ class CSPEvaluator extends Audit {
         displayValue: UIStrings.noCsp,
       };
     }
-    const findings = evaluateRawCsp(cspHeader.value);
+    const findings = evaluateRawCspForFailures(cspHeaders);
+    warnings.push(...evaluateRawCspForWarnings(cspHeaders).map(f => f.description));
     const results = this.constructResults(findings);
     /** @type {LH.Audit.Details.Table['headings']} */
     const headings = [
@@ -136,7 +137,7 @@ class CSPEvaluator extends Audit {
     const details = Audit.makeTableDetails(headings, results);
     return {
       warnings,
-      score: findings.find(f => f.severity < 100) ? 0 : 1,
+      score: findings.length > 0 ? 0 : 1,
       notApplicable: false,
       details,
     };
